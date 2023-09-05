@@ -24,7 +24,7 @@ provider "helm" {
 }
 
 module "eks_cluster" {
-  source = "git::https://github.com/sumittiwari022/terraform-aws-eks.git"
+  source = "git::https://github.com/ShradhaGupta26/terraform-aws-eks.git"
 
   cluster_name    = local.workspace.eks_cluster.name
   cluster_version = try(local.workspace.eks_cluster.version, "1.26")
@@ -58,7 +58,7 @@ resource "aws_security_group_rule" "cluster_to_node" {
 }
 
 module "cluster_autoscaler" {
-source = "git::https://github.com/sumittiwari022/terraform-aws-eks.git//modules/terraform-aws-eks-cluster-autoscaler"
+source = "git::https://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/terraform-aws-eks-cluster-autoscaler"
   enabled = true
   cluster_name                     = module.eks_cluster.cluster_id
   cluster_identity_oidc_issuer     = module.eks_cluster.cluster_oidc_issuer_url
@@ -70,7 +70,7 @@ source = "git::https://github.com/sumittiwari022/terraform-aws-eks.git//modules/
 }
 
 module "node_termination_handler" {
- source = "git::https://github.com/sumittiwari022/terraform-aws-eks.git//modules/terraform-aws-eks-node-termination-handler"
+ source = "git::htthttps://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/terraform-aws-eks-node-termination-handler"
 }
 
 //Ingress Security Group
@@ -151,7 +151,7 @@ EOF
 
 // load balancer controller
 module "load_balancer_controller" {
-  source = "git::https://github.com/sumittiwari022/terraform-aws-eks.git//modules/terraform-aws-eks-lb-controller"
+  source = "git::htthttps://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/terraform-aws-eks-lb-controller"
 
   cluster_identity_oidc_issuer     = module.eks_cluster.cluster_oidc_issuer_url
   cluster_identity_oidc_issuer_arn = module.eks_cluster.oidc_provider_arn
@@ -166,7 +166,7 @@ module "secrets-store-csi" {
   depends_on = [
     module.eks_cluster
   ]
-  source = "git::https://github.com/sumittiwari022/terraform-aws-eks.git//modules/secret-store-csi"
+  source = "git::htthttps://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/secret-store-csi"
   cluster_name = module.eks_cluster.cluster_id
   oidc_provider_arn = module.eks_cluster.oidc_provider_arn
   chart_version = local.workspace.eks_cluster.secrets-store-csi.chart_version
