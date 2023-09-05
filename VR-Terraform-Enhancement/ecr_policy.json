@@ -1,0 +1,21 @@
+{
+    "Version": "2008-10-17",
+    "Statement": [
+      {
+        "Sid": "AllowPushPull",
+        "Effect": "Allow",
+        "Principal": {
+          "AWS": "arn:aws:iam::454578700264:role/ttn-vr-ci"
+        },
+        "Action": [
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:BatchGetImage",
+          "ecr:CompleteLayerUpload",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:InitiateLayerUpload",
+          "ecr:PutImage",
+          "ecr:UploadLayerPart"
+        ]
+      }
+    ]
+}

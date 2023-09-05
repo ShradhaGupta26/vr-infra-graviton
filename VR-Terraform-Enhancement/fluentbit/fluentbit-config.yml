@@ -1,0 +1,336 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+    name: fluent-bit
+    labels:
+      app: fluent-bit
+rules:
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - pods
+      - nodes
+      - nodes/proxy
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+    name: fluent-bit
+    namespace: utility
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluent-bit
+roleRef:
+  kind: ClusterRole
+  name: fluent-bit
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: fluent-bit
+    namespace: utility
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: utility
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush         1
+        Log_Level     debug
+        Daemon        off
+        Parsers_File  parsers.conf
+        HTTP_Server   On
+        HTTP_Listen   0.0.0.0
+        HTTP_Port     2020
+
+    @INCLUDE input.conf
+    @INCLUDE output-elasticsearch.conf
+
+  input.conf: |
+   [INPUT]
+      Name tail
+      Tag videoready-config
+      Parser json
+      Path /opt/logs/videoready-config/*.log
+      DB /opt/logs/videoready-config/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit 100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size 4096k
+      Skip_Long_Lines On
+
+
+   [INPUT]
+      Name tail
+      Tag application-ingestor
+      Parser json
+      Path /opt/logs/application-ingestor/*.log
+      DB /opt/logs/application-ingestor/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit 100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size 4096k
+      Skip_Long_Lines On
+
+   [INPUT]
+      Name tail
+      Tag application-search
+      Parser json
+      Path /opt/logs/application-search/*.log
+      DB /opt/logs/application-search/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit 100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size 4096k
+      Skip_Long_Lines On
+
+
+   [INPUT]
+      Name tail
+      Tag subscriber-management
+      Parser json
+      Path /opt/logs/subscriber-management/*.log
+      DB  /opt/logs/subscriber-management/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit     100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size   4096k
+      Skip_Long_Lines On
+
+
+   [INPUT]
+      Name tail
+      Tag editorial-service
+      Parser json
+      Path /opt/logs/editorial-service/*.log
+      DB  /opt/logs/editorial-service/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit     100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size   4096k
+      Skip_Long_Lines On
+
+   [INPUT]
+      Name tail
+      Tag  gateway-service
+      Parser json
+      Path /opt/logs/gateway-service/*.log
+      DB  /opt/logs/gateway-service/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit     100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size   4096k
+      Skip_Long_Lines On
+
+   [INPUT]
+      Name tail
+      Tag core-service
+      Parser json
+      Path /opt/logs/core-service/*.log
+      DB  /opt/logs/core-service/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit     100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size   4096k
+      Skip_Long_Lines On
+
+   [INPUT]
+      Name tail
+      Tag content-service
+      Parser json
+      Path /opt/logs/content-service/*.log
+      DB  /opt/logs/content-service/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit     100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size   4096k
+      Skip_Long_Lines On
+
+   [INPUT]
+      Name tail
+      Tag api-provider
+      Parser json
+      Path /opt/logs/api-provider/*.log
+      DB  /opt/logs/api-provider/logs.db
+      Refresh_Interval 5
+      Mem_Buf_Limit     100MB
+      Buffer_Chunk_Size 128k
+      Buffer_Max_Size   4096k
+      Skip_Long_Lines On
+
+
+  output-elasticsearch.conf: |
+   [OUTPUT]
+      Name es
+      Match videoready-config
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-videoready-config
+      Logstash_Format true
+      Logstash_Prefix videoready-config
+      Type videoready-config
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+   [OUTPUT]
+      Name es
+      Match application-ingestor
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-application-ingestor
+      Logstash_Format true
+      Logstash_Prefix application-ingestor
+      Type application-ingestor
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+   [OUTPUT]
+      Name es
+      Match application-search
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-application-search
+      Logstash_Format true
+      Logstash_Prefix application-search
+      Type application-search
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+   [OUTPUT]
+      Name es
+      Match subscriber-management
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-subscriber-management
+      Logstash_Format true
+      Logstash_Prefix subscriber-management
+      Type subscriber-management
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+   [OUTPUT]
+      Name es
+      Match editorial-service
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-editorial-service
+      Logstash_Format true
+      Logstash_Prefix editorial-service
+      Type editorial-service
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+   [OUTPUT]
+      Name es
+      Match gateway-service
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-gateway-service
+      Logstash_Format true
+      Logstash_Prefix gateway-service
+      Type gateway-service
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+   [OUTPUT]
+      Name es
+      Match core-service
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-core-service
+      Logstash_Format true
+      Logstash_Prefix core-service
+      Type core-service
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+   [OUTPUT]
+      Name es
+      Match content-service
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-content-service
+      Logstash_Format true
+      Logstash_Prefix content-service
+      Type content-service
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+   [OUTPUT]
+      Name es
+      Match api-provider
+      Host ${FLUENT_ELASTICSEARCH_HOST}
+      Port ${FLUENT_ELASTICSEARCH_PORT}
+      Index non-production-api-provider
+      Logstash_Format true
+      Logstash_Prefix api-provider
+      Type api-provider
+      Retry_Limit 1
+      Suppress_Type_Name On
+
+
+  parsers.conf: |
+    [PARSER]
+        Name   apache
+        Format regex
+        Regex  ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   apache2
+        Format regex
+        Regex  ^(?<host>[^ ]*) [^ ]* (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +(?<path>[^ ]*) +\S*)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   apache_error
+        Format regex
+        Regex  ^\[[^ ]* (?<time>[^\]]*)\] \[(?<level>[^\]]*)\](?: \[pid (?<pid>[^\]]*)\])?( \[client (?<client>[^\]]*)\])? (?<message>.*)$
+
+    [PARSER]
+        Name   kong
+        Format regex
+        Regex ^(?<remote>[^ ]*) (?<host>[^ ]*) (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +\/(?<api>[a-z-0-9-_]*)\/?(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)") (?<response>[^ ]*) (?<pipe>[^ ]*)? .
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   nginx
+        Format regex
+        Regex ^(?<remote>[^ ]*) (?<host>[^ ]*) (?<user>[^ ]*) \[(?<time>[^\]]*)\] "(?<method>\S+)(?: +\/(?<api>[a-z-]*)\/(?<path>[^\"]*?)(?: +\S*)?)?" (?<code>[^ ]*) (?<size>[^ ]*)(?: "(?<referer>[^\"]*)" "(?<agent>[^\"]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   json
+        Format json
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep   On
+        # Command      |  Decoder | Field | Optional Action
+        # =============|==================|=================
+        Decode_Field_As   escaped    log
+
+    [PARSER]
+        Name        syslog
+        Format      regex
+        Regex       ^\<(?<pri>[0-9]+)\>(?<time>[^ ]* {1,2}[^ ]* [^ ]*) (?<host>[^ ]*) (?<ident>[a-zA-Z0-9_\/\.\-]*)(?:\[(?<pid>[0-9]+)\])?(?:[^\:]*\:)? *(?<message>.*)$
+        Time_Key    time
+        Time_Format %b %d %H:%M:%S
