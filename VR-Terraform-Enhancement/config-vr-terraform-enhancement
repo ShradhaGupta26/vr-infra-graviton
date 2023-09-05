@@ -1,0 +1,193 @@
+workspaces:
+  vr-terraform-enhancement:
+    aws:
+      role: InfraDeployAccess
+      account_id: 454578700264
+      region: ap-south-1
+    account_name: internal-ott
+    key_name: "vr-infra-enhancement"
+    project_name: vr
+    environment_name: demo
+    hosted_zone: "videoready.tv"
+    eks_cluster:
+      name: "vr-cluster"
+      version: "1.24"
+      cluster_endpoint_private_access: true
+      cluster_endpoint_public_access: false
+      min_size: 3
+      desired_size: 3
+      max_size: 12  
+      instance_type: "m5a.xlarge"
+      is_mixed_instance_policy: false
+      http_token_option: "optional"
+      addons:
+        aws-ebs-csi-driver:
+          resolve_conflicts: "OVERWRITE"
+        vpc-cni:
+          resolve_conflicts: "OVERWRITE"
+      override:
+      - instance_type: "m5a.xlarge"
+        weighted_capacity: "1"
+      - instance_type: "m5a.large"
+        weighted_capacity: "2"
+      instances_distribution:
+        on_demand_base_capacity: 0
+        on_demand_percentage_above_base_capacity: 20
+        spot_allocation_strategy: "capacity-optimized"
+      block_device_mappings:
+        xvda:
+          device_name: "/dev/xvda"
+          ebs:
+            volume_size: 50
+            volume_type: "gp3"
+            iops: 3000
+            throughput: 150
+            encrypted: true
+            delete_on_termination: true
+      instances_distribution_override:
+        - instance_type: "t2.medium"
+          weighted_capacity: 1
+        - instance_type: "t3.medium"
+          weighted_capacity: 1
+        - instance_type: "t3.large"
+          weighted_capacity: 2
+      cluster_security_group:
+        cluster_rule_ingress:
+          description: "inbound vpc"
+          protocol: "tcp"
+          from_port: 0
+          to_port: 65535
+          type: "ingress"
+          cidr_blocks:
+            - "10.0.0.0/16"
+        cluster_rule_egress:
+          description: "outbound vpc"
+          protocol: "-1"
+          from_port: 0
+          to_port: 65535
+          type: "egress"
+          cidr_blocks:
+            - "10.0.0.0/16"
+      node_security_group:
+        node_rules_ingress:
+          description: "inbound vpc"
+          protocol: "tcp"
+          from_port: 0
+          to_port: 65535
+          type: "ingress"
+          cidr_blocks:
+            - "10.0.0.0/16"
+        node_rules_egress:
+          description: "outbound vpc"
+          protocol: "-1"
+          from_port: 0
+          to_port: 65535
+          type: "egress"
+          cidr_blocks:
+            - "0.0.0.0/0"
+      ingress_sg_name: "ingress-sg"
+      secrets-store-csi:
+        enableSecretRotation: true
+        syncSecretEnabled: true
+        chart_version: "1.2.4"
+        ascp_chart_version: "0.0.3"
+      argocd:
+        namespace: "argocd"
+        version: "5.16.1"
+        repository: "https://argoproj.github.io/argo-helm"
+        chart_name: "argo-cd"
+
+    queue:
+      engine: 
+      instance_type: "t3.medium"
+      parameter_group_name: "default.aurora-mysql5.7"
+      db_name: "vr_queue"
+      engine_version: 2.11.0
+      allocated_storage: 50
+      storage_encrypted: true
+      # kms_key_id: "218715fc-2d6a-4cee-bceb-da10d17dc575"
+      # kms_key_id: "arn:aws:kms:us-west-2:454578700264:key/218715fc-2d6a-4cee-bceb-da10d17dc575"
+      vpc_cidr: "10.0.0.0/16"
+      kms_key_desc: "key for queue"
+      deletion_window_in_days: 7
+
+    nosql:
+      mongodb:
+        - name: samplecollection
+          version: "4.2" 
+          instance_class: "r5.large"
+    rds:
+      engine: "aurora-mysql"
+      instance_class: "db.serverless"
+      parameter_group_name: "default.aurora-mysql5.7"
+      db_name: "vr_db"
+      engine_version: "8.0.mysql_aurora.3.02.0"
+      serverlessv2_scaling_configuration_max: 10
+      serverlessv2_scaling_configuration_min: 4
+      allocated_storage: 100
+      storage_encrypted: true
+      db_subnet_group_id: "subnet_group"
+      # kms_key_id: "218715fc-2d6a-4cee-bceb-da10d17dc575"
+      vpc_cidr: "10.0.0.0/16"
+      environment: "demo"
+      kms_key_desc: "key for rds"
+      deletion_window_in_days: 7
+
+    elasticsearch:
+      instance_count: 2
+      instance_type: "m5a.large"
+      volume_size: 100
+      volume_type: "gp2"
+      # kms_key_id: "arn:aws:kms:us-west-2:454578700264:key/218715fc-2d6a-4cee-bceb-da10d17dc575"
+      iam_instance_profile: "elasticsearch"
+      cloudwatch_logs_retention: 7
+      vpc_cidr: "10.0.0.0/16"
+      kms_key_desc: "key for elasticsearch"
+      deletion_window_in_days: 7
+
+    mongodb:
+      primary_node_type: "m5a.large"
+      create_secondary: 2
+      secondary_node_type: "m5a.large"
+      db_name: "admin"
+      key_name: "mongodb"
+    s3:
+      name: "vr-terraform-enhancement"
+    
+    kms_policy:
+      role_name: "role-attached-to-tf-instance"
+
+    mysql_addons:
+      app_user_names: ["api-provider", "core", "core-auth", "core-editorial", "core-content", "subscriber-management"]
+      search_db_name: "vr_search"
+      search_user_names: ["application-search", "application-ingestor", "videoready-config"]
+
+    mongo_addons:
+      search_db_name: zee-prod
+      search_user_name: vrsearch-user
+    
+    rabbit_addons:
+       queue_list: ["search-new","search-vr"]
+       exchange_list: ["search-exchange","search-vr","search-new"]
+
+    monitoring:
+      namespace: "monitoring"
+      version: "36.2.0"
+      stack_name: "kube-prometheus-stackr"
+    
+    efk:
+     ami_id: "ami-03c7d01cf4dedc891" #amzn linux2 image
+     instance_type: "m5a.large"
+     
+    ecr:
+      repo_names: ["utility","api-provider-service","application-ingestor","application-search-service","videoready-config","frontend-cms","frontend-web","content-processor","content-service","editorial-service","gateway-service","core-service","subscriber-management","producer-service"]
+
+    cdn:
+      s3_origin_id: "s3_origin_id"
+    cache:
+      redis:
+        failover: "true"
+        availability_zones: ["ap-south-1b","ap-south-1a"]
+        clusters: "2"
+        node_type: "cache.r4.large"
+        cluster_version: "3.2.10"  
