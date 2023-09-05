@@ -70,7 +70,7 @@ source = "git::https://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/
 }
 
 module "node_termination_handler" {
- source = "git::htthttps://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/terraform-aws-eks-node-termination-handler"
+ source = "git::https://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/terraform-aws-eks-node-termination-handler"
 }
 
 //Ingress Security Group
@@ -151,7 +151,7 @@ EOF
 
 // load balancer controller
 module "load_balancer_controller" {
-  source = "git::htthttps://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/terraform-aws-eks-lb-controller"
+  source = "git::https://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/terraform-aws-eks-lb-controller"
 
   cluster_identity_oidc_issuer     = module.eks_cluster.cluster_oidc_issuer_url
   cluster_identity_oidc_issuer_arn = module.eks_cluster.oidc_provider_arn
@@ -166,7 +166,7 @@ module "secrets-store-csi" {
   depends_on = [
     module.eks_cluster
   ]
-  source = "git::htthttps://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/secret-store-csi"
+  source = "git::https://github.com/ShradhaGupta26/terraform-aws-eks.git//modules/secret-store-csi"
   cluster_name = module.eks_cluster.cluster_id
   oidc_provider_arn = module.eks_cluster.oidc_provider_arn
   chart_version = local.workspace.eks_cluster.secrets-store-csi.chart_version
