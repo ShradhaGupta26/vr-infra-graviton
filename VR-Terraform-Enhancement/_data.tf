@@ -1,14 +1,14 @@
 data "aws_vpc" "selected" {
   filter {
     name   = "tag:Name"
-    values = ["nonprod-eu-west-3-vr-enhancement-ttn"]
+    values = ["non-prod-zee-vpc"]
   }
 }
 
 data "aws_subnets" "public" {
   filter {
     name   = "tag:Name"
-    values = ["nonprod-eu-west-3-vr-enhancement-ttn-public-*"]
+    values = ["non-prod-zee-public-ap-south-1*"]
   }
   filter {
     name   = "vpc-id"
@@ -19,7 +19,7 @@ data "aws_subnets" "public" {
 data "aws_subnets" "private" {
   filter {
     name   = "tag:Name"
-    values = ["nonprod-eu-west-3-vr-enhancement-ttn-private-*"]
+    values = ["non-prod-zee-application-ap-south-1*"]
   }
   filter {
     name   = "vpc-id"
@@ -30,7 +30,7 @@ data "aws_subnets" "private" {
 data "aws_subnets" "secure" {
   filter {
     name   = "tag:Name"
-    values = ["nonprod-eu-west-3-vr-enhancement-ttn-database-*"]
+    values = ["non-prod-zee-database-south-1a"]
   }
   filter {
     name   = "vpc-id"
